@@ -1,4 +1,5 @@
 image:
-  repository: azeshion21/demo-app
+  repository: luthfi27/demo-app
   tag: latest
 replicaCount: 1
+
