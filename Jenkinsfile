@@ -21,7 +21,7 @@ pipeline {
       steps {
         script {
           echo "🛠️ Building image ${IMAGE}:${TAG}..."
-          def builtImage = docker.build("${IMAGE}:${TAG}")
+          bat "docker build -t ${IMAGE}:${TAG} ."
         }
       }
     }
@@ -35,8 +35,8 @@ pipeline {
         )]) {
           script {
             echo "📦 Pushing image to DockerHub..."
-            sh """
-              echo "$PASS" | docker login -u "$USER" --password-stdin
+            bat """
+              echo %PASS% | docker login -u %USER% --password-stdin
               docker push ${IMAGE}:${TAG}
             """
           }
@@ -49,13 +49,13 @@ pipeline {
         withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'KUBE_FILE')]) {
           script {
             echo "🚀 Deploying to Kubernetes via Helm..."
-            sh '''
-              export KUBECONFIG=$KUBE_FILE
-              helm upgrade --install $HELM_RELEASE ./helm \
-                --set image.repository=$IMAGE \
-                --set image.tag=$TAG \
-                --namespace $NAMESPACE --create-namespace
-            '''
+            bat """
+              set KUBECONFIG=%KUBE_FILE%
+              helm upgrade --install ${HELM_RELEASE} ./helm ^
+                --set image.repository=${IMAGE} ^
+                --set image.tag=${TAG} ^
+                --namespace ${NAMESPACE} --create-namespace
+            """
           }
         }
       }
@@ -71,4 +71,3 @@ pipeline {
     }
   }
 }
-
